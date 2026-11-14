@@ -112,19 +112,19 @@ if [[ -n "$IN_FILE" ]]; then
       fi
 
       echo "$STARLING_ARGS" | WASMTIME_BACKTRACE_DETAILS=1 $weval weval -w $preopen_dir \
-           --cache-ro "$(dirname "$0")/starling-ics.wevalcache" \
+           --cache-ro "$(dirname "$0")/plugin.js.wevalcache" \
            $WEVAL_VERBOSE \
            -o "$OUT_FILE" \
-           -i "$(dirname "$0")/starling-raw.wasm"
+           -i "$(dirname "$0")/plugin.js.core.wasm"
   else
       echo "$STARLING_ARGS" | WASMTIME_BACKTRACE_DETAILS=1 $wizer -S cli -S inherit-env \
            -W bulk-memory -W unknown-imports-trap \
            $preopen_dir -o "$OUT_FILE" \
-           "$(dirname "$0")/starling-raw.wasm"
+           "$(dirname "$0")/plugin.js.core.wasm"
   fi
 else
   echo "Creating runtime-eval component $OUT_FILE"
-  cp "$(dirname "$0")/starling-raw.wasm" "$OUT_FILE"
+  cp "$(dirname "$0")/plugin.js.core.wasm" "$OUT_FILE"
 fi
 
 $wasm_tools component new -v --adapt "wasi_snapshot_preview1=$(dirname "$0")/@ADAPTER_FILE@" --output "$OUT_FILE" "$OUT_FILE"

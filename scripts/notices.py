@@ -61,8 +61,8 @@ def main():
     root = Path(__file__).resolve().parents[1]
     files = [root / "NOTICE", root / "LICENSE"]
     files += sorted(path for path in (root / "licenses").rglob("*") if path.is_file() and path.name != ".DS_Store")
-    files += [root / "crates/rust-hooks/Cargo.toml", root / "crates/rust-hooks/src/lib.rs",
-              root / "crates/rust-hooks/src/wrappers.cpp"]
+    files += [root / "src/crates/rust-hooks/Cargo.toml", root / "src/crates/rust-hooks/src/lib.rs",
+              root / "src/crates/rust-hooks/src/wrappers.cpp"]
     payload = b"".join(b"\n===== " + str(path.relative_to(root)).encode() + b" =====\n"
                        + path.read_bytes() + b"\n" for path in files)
     section = uleb(len(SECTION)) + SECTION + payload

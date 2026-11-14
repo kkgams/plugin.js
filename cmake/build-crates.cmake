@@ -13,8 +13,8 @@
 
 set(RUST_STATICLIB_RS "${CMAKE_CURRENT_BINARY_DIR}/rust-staticlib.rs" CACHE INTERNAL "Path to the Rust staticlibs bundler source file" FORCE)
 set(RUST_STATICLIB_TOML "${CMAKE_CURRENT_BINARY_DIR}/Cargo.toml" CACHE INTERNAL "Path to the Rust staticlibs bundler Cargo.toml file" FORCE)
-configure_file("runtime/crates/staticlib-template/rust-staticlib.rs.in" "${RUST_STATICLIB_RS}" COPYONLY)
-configure_file("runtime/crates/staticlib-template/Cargo.toml.in" "${RUST_STATICLIB_TOML}")
+configure_file("cmake/rust-staticlib/rust-staticlib.rs.in" "${RUST_STATICLIB_RS}" COPYONLY)
+configure_file("cmake/rust-staticlib/Cargo.toml.in" "${RUST_STATICLIB_TOML}")
 configure_file("Cargo.lock" "${CMAKE_CURRENT_BINARY_DIR}/Cargo.lock" COPYONLY)
 
 corrosion_import_crate(
@@ -34,15 +34,15 @@ function(add_rust_lib name path)
 endfunction()
 
 # These two crates are needed by SpiderMonkey:
-add_rust_lib(rust-encoding "${CMAKE_CURRENT_SOURCE_DIR}/crates/rust-encoding")
-add_rust_lib(rust-hooks "${CMAKE_CURRENT_SOURCE_DIR}/crates/rust-hooks")
+add_rust_lib(rust-encoding "${CMAKE_CURRENT_SOURCE_DIR}/src/crates/rust-encoding")
+add_rust_lib(rust-hooks "${CMAKE_CURRENT_SOURCE_DIR}/src/crates/rust-hooks")
 
 # The rust-hooks crate needs a supporting CPP file
-add_library(rust-hooks-wrappers STATIC "${CMAKE_CURRENT_SOURCE_DIR}/crates/rust-hooks/src/wrappers.cpp")
+add_library(rust-hooks-wrappers STATIC "${CMAKE_CURRENT_SOURCE_DIR}/src/crates/rust-hooks/src/wrappers.cpp")
 target_link_libraries(rust-hooks-wrappers PRIVATE spidermonkey)
 add_library(rust-crates STATIC ${CMAKE_CURRENT_BINARY_DIR}/null.cpp)
 target_link_libraries(rust-crates PRIVATE rust_staticlib rust-hooks-wrappers)
 
 # Add crates as needed here:
-add_rust_lib(rust-url "${CMAKE_CURRENT_SOURCE_DIR}/crates/rust-url")
+add_rust_lib(rust-url "${CMAKE_CURRENT_SOURCE_DIR}/src/crates/rust-url")
 # multipart is only needed for the removed form-data/fetch builtins.

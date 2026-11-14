@@ -15,7 +15,7 @@ The full Firefox collection includes terms for components absent from this build
 it does not relicense the plugin or imply every listed component is linked.
 
 The modified MPL-2.0 rust-hooks source is included verbatim with these notices
-as crates/rust-hooks/Cargo.toml and crates/rust-hooks/src/{lib.rs,wrappers.cpp}.
+as src/crates/rust-hooks/Cargo.toml and src/crates/rust-hooks/src/{lib.rs,wrappers.cpp}.
 It remains available under MPL-2.0; the complete license is included in the
 Firefox license collection. No additional restrictions apply to covered source.
 
@@ -32,7 +32,7 @@ Those files retain licensing alternatives and embedded-object exceptions.
 
 The distributed OCI component embeds this file, LICENSE, all licenses/ files and
 the actual modified MPL source in its gams:licenses custom section. Read them:
-  python3 scripts/notices.py --extract gams-js.wasm
+  python3 scripts/notices.py --extract plugin.js.wasm
 The script is available in the plugin.js source repository:
 https://github.com/kkgams/plugin.js
 The custom-section payload is UTF-8 text with labeled, verbatim file contents.

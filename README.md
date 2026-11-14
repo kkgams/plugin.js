@@ -5,14 +5,14 @@ A GAMS-specific JavaScript runtime built on SpiderMonkey, derived from
 independently for [GAMS](https://github.com/kkgams/gams), not as a browser, Node.js
 or general-purpose WASI JavaScript runtime.
 
-| Unit | Source / output | License / original work |
-| --- | --- | --- |
-| `gams:js/js@1.0.0` | `runtime/`, `host-apis/my-minimal/` → `build.nosync/gams-js.wasm` | [Apache-2.0](LICENSE), [third-party terms and source availability](NOTICE); [StarlingMonkey](https://github.com/bytecodealliance/StarlingMonkey) / Bytecode Alliance and [SpiderMonkey](https://spidermonkey.dev/) / Mozilla contributors |
+| Unit | Source / output | Screenshot | License / original work |
+| --- | --- | --- | --- |
+| `gams:js/js@1.0.0` | `src/`, `wit/` → `build.nosync/plugin.js.wasm` | Not applicable | [Apache-2.0](LICENSE), [third-party terms and source availability](NOTICE); [StarlingMonkey](https://github.com/bytecodealliance/StarlingMonkey) / Bytecode Alliance and [SpiderMonkey](https://spidermonkey.dev/) / Mozilla contributors |
 
 Exports `run(source: string) -> result<string, string>`; imports only
 `gams:runtime/runtime@1.0.0`. No UI or standalone JavaScript application is shipped.
 Original licenses and the modified MPL source travel inside the OCI component:
-`python3 scripts/notices.py --extract gams-js.wasm`.
+`python3 scripts/notices.py --extract plugin.js.wasm`.
 
 ## Execution contract
 
@@ -38,13 +38,21 @@ per-call execution timeout or memory quota.
 
 ## Development
 
+| Path | Contents |
+| --- | --- |
+| `src/` | C++ runtime, GAMS Host bridge/bindings, builtins and supporting Rust crates. |
+| `wit/` | Component interface and GAMS runtime import. |
+| `cmake/`, `scripts/`, `nix/` | Native build definitions, packaging tools and pinned tool provisioning. |
+| `docs/`, `licenses/` | Wiki source and original third-party terms. |
+| `build.nosync/` | Disposable build, package, docs and cache output. |
+
 Use `nix develop` for pinned Rust 1.88.0/WASIp1, WASI SDK 30 and native build
 tools. The first build downloads pinned SpiderMonkey artifacts and CMake inputs.
 Cargo.lock fixes the generated Rust static library's dependency resolution.
 
 | Command | Purpose |
 | --- | --- |
-| `make build` | Compile and embed recipient notices in `build.nosync/gams-js.wasm`. |
+| `make build` | Compile and embed recipient notices in `build.nosync/plugin.js.wasm`. |
 | `make package` | Build the component and `build.nosync/SHA256SUMS`; no publication. |
 | `make open` | Build and open local `gams.json` in released GAMS v3.1.1 (macOS Apple Silicon). |
 | `make serve-docs` | Serve the pinned wiki; `DOCS_PORT` defaults to 8080. |
@@ -64,7 +72,7 @@ Project browses files; it is not a JavaScript editor or runtime test.
 The distribution remains a single component at `ghcr.io/kkgams/gams/js`:
 
 ```sh
-wkg oci pull ghcr.io/kkgams/gams/js:1.0.1 -o build.nosync/gams-js.wasm
+wkg oci pull ghcr.io/kkgams/gams/js:1.0.1 -o build.nosync/plugin.js.wasm
 ```
 
 Select an explicitly published numeric version. New numeric `vX.Y.Z` tags map to

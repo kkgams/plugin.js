@@ -6,7 +6,7 @@
     {
       "$file": "https://github.com/kkgams/plugin.layout/releases/download/v0.2.3/plugin.layout.wasm"
     },
-    "build.nosync/gams-js.wasm"
+    "build.nosync/plugin.js.wasm"
   ],
   "ui": {
     "keys": [],

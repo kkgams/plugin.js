@@ -24,4 +24,4 @@ jobs:
           reference="ghcr.io/kkgams/gams/js:${GITHUB_REF_NAME#v}"
           printf '%s' "$GH_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
           nix develop --command python3 scripts/oci-tag-absent.py "$reference"
-          nix develop --command wkg oci push "$reference" build.nosync/gams-js.wasm
+          nix develop --command wkg oci push "$reference" build.nosync/plugin.js.wasm

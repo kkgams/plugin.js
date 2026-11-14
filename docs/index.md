@@ -12,7 +12,7 @@ or general-purpose WASI JavaScript runtime.
 
 | Unit | Source / output |
 | --- | --- |
-| `gams:js/js@1.0.0` | `runtime/`, `host-apis/my-minimal/` → `build.nosync/gams-js.wasm` |
+| `gams:js/js@1.0.0` | `src/`, `wit/` → `build.nosync/plugin.js.wasm` |
 
 Exports `run(source: string) -> result<string, string>`; imports only
 `gams:runtime/runtime@1.0.0`. No UI or standalone JavaScript application is shipped.
@@ -38,13 +38,20 @@ per-call timeout or memory quota.
 
 ## Development
 
+| Path | Contents |
+| --- | --- |
+| `src/` | Runtime, GAMS Host bridge/bindings, builtins and Rust support. |
+| `wit/` | Component interface and GAMS runtime import. |
+| `cmake/`, `scripts/`, `nix/` | Build definitions, packaging and tool provisioning. |
+| `build.nosync/` | Disposable build, package, docs and cache output. |
+
 Use `nix develop` for pinned Rust 1.88.0/WASIp1, WASI SDK 30 and native build
 tools. The first build downloads pinned SpiderMonkey artifacts and CMake inputs.
 Cargo.lock fixes the generated Rust static library's dependency resolution.
 
 | Command | Purpose |
 | --- | --- |
-| `make build` | Compile and embed recipient notices in `build.nosync/gams-js.wasm`. |
+| `make build` | Compile and embed recipient notices in `build.nosync/plugin.js.wasm`. |
 | `make package` | Build the component and `build.nosync/SHA256SUMS`; no publication. |
 | `make open` | Build and open local `gams.json` in released GAMS v3.1.1 (macOS Apple Silicon). |
 | `make serve-docs` | Serve the pinned wiki; `DOCS_PORT` defaults to 8080. |

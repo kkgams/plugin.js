@@ -5,7 +5,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
 
 # This repository builds one artifact: the GAMS JavaScript plugin component.
-set(HOST_API ${CMAKE_CURRENT_SOURCE_DIR}/host-apis/my-minimal)
+set(HOST_API ${CMAKE_CURRENT_SOURCE_DIR}/src/host)
 message(STATUS "Using host API: ${HOST_API}")
 
 # Keep CPM downloads outside individual build directories.
@@ -24,56 +24,56 @@ include("binaryen")
 include("weval")
 include("wasmtime")
 include("spidermonkey")
-include("${HOST_API}/host_api.cmake")
+include("host")
 include("build-crates")
 
-add_library(extension_api INTERFACE include/extension-api.h runtime/encode.h runtime/decode.h)
+add_library(extension_api INTERFACE src/include/extension-api.h src/runtime/encode.h src/runtime/decode.h)
 target_link_libraries(extension_api INTERFACE rust-url spidermonkey)
-target_include_directories(extension_api INTERFACE include deps/include runtime)
+target_include_directories(extension_api INTERFACE src/include src/runtime)
 
 include("builtins")
 
 set(SOURCES
-    runtime/js.cpp
-    host-apis/my-minimal/wasi_shim.cpp
-    runtime/allocator.cpp
-    runtime/encode.cpp
-    runtime/decode.cpp
-    runtime/engine.cpp
-    runtime/event_loop.cpp
-    runtime/builtin.cpp
-    runtime/script_loader.cpp
-    runtime/debugger.cpp
+    src/runtime/js.cpp
+    src/host/wasi_shim.cpp
+    src/runtime/allocator.cpp
+    src/runtime/encode.cpp
+    src/runtime/decode.cpp
+    src/runtime/engine.cpp
+    src/runtime/event_loop.cpp
+    src/runtime/builtin.cpp
+    src/runtime/script_loader.cpp
+    src/runtime/debugger.cpp
 )
 
-add_executable(starling-raw.wasm ${SOURCES})
-target_link_libraries(starling-raw.wasm PRIVATE host_api extension_api builtins spidermonkey rust-crates)
-target_link_options(starling-raw.wasm PRIVATE -Wl,--allow-multiple-definition)
+add_executable(plugin.js.core.wasm ${SOURCES})
+target_link_libraries(plugin.js.core.wasm PRIVATE host_api extension_api builtins spidermonkey rust-crates)
+target_link_options(plugin.js.core.wasm PRIVATE -Wl,--allow-multiple-definition)
 
 option(USE_WASM_OPT "use wasm-opt to optimize the raw wasm binary" ON)
 
 if (USE_WASM_OPT)
     if (CMAKE_BUILD_TYPE STREQUAL "Release")
         add_custom_command(
-            TARGET starling-raw.wasm
+            TARGET plugin.js.core.wasm
             POST_BUILD
-            COMMAND ${WASM_OPT} --strip-debug -O3 -o starling-raw.wasm starling-raw.wasm
+            COMMAND ${WASM_OPT} --strip-debug -O3 -o plugin.js.core.wasm plugin.js.core.wasm
             WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
         )
     elseif (CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
         add_custom_command(
-            TARGET starling-raw.wasm
+            TARGET plugin.js.core.wasm
             POST_BUILD
-            COMMAND ${WASM_OPT} -O3 -g -o starling-raw.wasm starling-raw.wasm
+            COMMAND ${WASM_OPT} -O3 -g -o plugin.js.core.wasm plugin.js.core.wasm
             WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
         )
     endif()
 else()
     if (CMAKE_BUILD_TYPE STREQUAL "Release")
         add_custom_command(
-            TARGET starling-raw.wasm
+            TARGET plugin.js.core.wasm
             POST_BUILD
-            COMMAND ${WASM_OPT} --strip-debug -O0 -o starling-raw.wasm starling-raw.wasm
+            COMMAND ${WASM_OPT} --strip-debug -O0 -o plugin.js.core.wasm plugin.js.core.wasm
             WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
         )
     endif()
@@ -83,12 +83,12 @@ endif()
 if(WEVAL)
     file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/null.js "function main() {}")
     add_custom_target(
-        starling-ics.wevalcache
+        plugin.js.wevalcache
         ALL
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-        COMMAND rm -f starling-ics.wevalcache
-        COMMAND echo ./null.js | ${WEVAL_BIN} weval --dir . --show-stats --cache starling-ics.wevalcache -w -i starling-raw.wasm -o /dev/null
-        DEPENDS starling-raw.wasm
+        COMMAND rm -f plugin.js.wevalcache
+        COMMAND echo ./null.js | ${WEVAL_BIN} weval --dir . --show-stats --cache plugin.js.wevalcache -w -i plugin.js.core.wasm -o /dev/null
+        DEPENDS plugin.js.core.wasm
         VERBATIM
     )
     set(AOT 1)
@@ -108,13 +108,13 @@ if(NOT ADAPTER_BUILD_RESULT EQUAL 0)
     message(FATAL_ERROR "Failed to build minimal preview1 fd_write adapter")
 endif()
 
-configure_file("componentize.sh.in" "${CMAKE_CURRENT_BINARY_DIR}/componentize.sh" @ONLY)
+configure_file("scripts/componentize.sh.in" "${CMAKE_CURRENT_BINARY_DIR}/componentize.sh" @ONLY)
 
 add_custom_command(
-    OUTPUT gams-js.wasm
+    OUTPUT plugin.js.wasm
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-    COMMAND ${CMAKE_CURRENT_BINARY_DIR}/componentize.sh -o gams-js.wasm
-    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/componentize.sh starling-raw.wasm
+    COMMAND ${CMAKE_CURRENT_BINARY_DIR}/componentize.sh -o plugin.js.wasm
+    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/componentize.sh plugin.js.core.wasm
     VERBATIM
 )
-add_custom_target(gams-js ALL DEPENDS gams-js.wasm)
+add_custom_target(plugin-js ALL DEPENDS plugin.js.wasm)
