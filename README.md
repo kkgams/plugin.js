@@ -46,7 +46,9 @@ per-call execution timeout or memory quota.
 | `docs/`, `licenses/` | Wiki source and original third-party terms. |
 | `build.nosync/` | Disposable build, package, docs and cache output. |
 
-Use `nix develop` for pinned Rust 1.88.0/WASIp1, WASI SDK 30 and native build
+Run `direnv allow` once with your shell's direnv hook enabled; `.envrc` loads
+the pinned Nix toolchain automatically. Alternatively, use `nix develop`.
+The environment supplies CMake, Rust 1.88.0/WASIp1, WASI SDK 30 and native build
 tools. The first build downloads pinned SpiderMonkey artifacts and CMake inputs.
 Cargo.lock fixes the generated Rust static library's dependency resolution.
 
