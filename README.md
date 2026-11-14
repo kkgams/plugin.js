@@ -54,7 +54,7 @@ Cargo.lock fixes the generated Rust static library's dependency resolution.
 | --- | --- |
 | `make build` | Compile and embed recipient notices in `build.nosync/plugin.js.wasm`. |
 | `make package` | Build the component and `build.nosync/SHA256SUMS`; no publication. |
-| `make open` | Build and open local `gams.json` in released GAMS v3.1.1 (macOS Apple Silicon). |
+| `make open` | Build and open local `gams.json` in released GAMS v3.2.0 (macOS Apple Silicon). |
 | `make serve-docs` | Serve the pinned wiki; `DOCS_PORT` defaults to 8080. |
 | `make docs` | Build the wiki in `build.nosync/site/`. |
 | `make validate-docs` | Validate wiki content. |

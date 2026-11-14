@@ -52,7 +52,7 @@ build.nosync/SHA256SUMS: $(ARTIFACT)
 clean:
 	$(PYTHON) scripts/clean.py
 
-GAMS_VERSION := v3.1.1
+GAMS_VERSION := v3.2.0
 GAMS_URL := https://github.com/kkgams/gams/releases/download/$(GAMS_VERSION)/GAMS-macos-aarch64.zip
 
 tools/gams.app:
