@@ -39,7 +39,7 @@ Project browses files; it is not a JavaScript editor or runtime test.
 The distribution remains a single component at `ghcr.io/kkgams/gams/js`:
 
 ```sh
-wkg oci pull ghcr.io/kkgams/gams/js:1.0.0 -o build.nosync/gams-js.wasm
+wkg oci pull ghcr.io/kkgams/gams/js:1.0.1 -o build.nosync/gams-js.wasm
 ```
 
 Select an explicitly published numeric version. New numeric `vX.Y.Z` tags map to
