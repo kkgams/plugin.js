@@ -1,6 +1,9 @@
 # JavaScript plugin
 
-A SpiderMonkey-based JavaScript runner for [GAMS](https://github.com/kkgams/gams).
+A GAMS-specific JavaScript runtime built on SpiderMonkey, derived from
+[StarlingMonkey](https://github.com/bytecodealliance/StarlingMonkey). Maintained
+independently for [GAMS](https://github.com/kkgams/gams), not as a browser, Node.js
+or general-purpose WASI JavaScript runtime.
 
 | Unit | Source / output | License / original work |
 | --- | --- | --- |
@@ -10,6 +13,28 @@ Exports `run(source: string) -> result<string, string>`; imports only
 `gams:runtime/runtime@1.0.0`. No UI or standalone JavaScript application is shipped.
 Original licenses and the modified MPL source travel inside the OCI component:
 `python3 scripts/notices.py --extract gams-js.wasm`.
+
+## Execution contract
+
+`run` evaluates a classic JavaScript script and returns its completion value
+converted to a string, not JSON. Evaluation errors return the error string.
+The engine is created lazily; successive calls on the same component instance
+share globals and state. There is no per-call reset.
+
+Promise microtasks run after successful evaluation, before the result is
+converted to a string. A returned Promise is not awaited or unwrapped.
+
+`host.call(target, ...args)` sends a JSON argument array to GAMS and parses the
+JSON response. A single-field `ok` result is unwrapped; a single-field `err`
+result throws. `host.rawCall(target, argsJson)` exchanges JSON strings without
+unwrapping. Both calls are synchronous and expose the operations available to
+the Host; this is not a sandbox for untrusted scripts.
+
+Standard JavaScript globals are available, plus `host` and `log`. Browser APIs
+such as fetch, URL, timers, WebCrypto and Web Streams are not installed. The
+current shims provide deterministic random numbers and synthetic clock values,
+not secure entropy or real elapsed time. The plugin does not implement a
+per-call execution timeout or memory quota.
 
 ## Development
 

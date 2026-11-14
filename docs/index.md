@@ -6,7 +6,9 @@ status: reference
 
 # JavaScript plugin
 
-A SpiderMonkey-based JavaScript runner for [GAMS](https://github.com/kkgams/gams).
+A GAMS-specific JavaScript runtime built on SpiderMonkey. Maintained
+independently for [GAMS](https://github.com/kkgams/gams), not as a browser, Node.js
+or general-purpose WASI JavaScript runtime.
 
 | Unit | Source / output |
 | --- | --- |
@@ -14,6 +16,25 @@ A SpiderMonkey-based JavaScript runner for [GAMS](https://github.com/kkgams/gams
 
 Exports `run(source: string) -> result<string, string>`; imports only
 `gams:runtime/runtime@1.0.0`. No UI or standalone JavaScript application is shipped.
+
+## Execution
+
+`run` evaluates a classic JavaScript script and returns its completion value
+converted to a string, not JSON. Evaluation errors return the error string.
+Calls on the same component instance share globals and state, with no per-call
+reset. Promise microtasks run after successful evaluation; returned Promises
+are not awaited or unwrapped.
+
+Use `host.call(target, ...args)` for synchronous JSON calls to GAMS. It unwraps
+single-field `ok` results and throws on single-field `err` results.
+`host.rawCall(target, argsJson)` exchanges JSON strings without unwrapping.
+Available Host operations determine what scripts can access; do not run
+untrusted scripts.
+
+Standard JavaScript globals, `host` and `log` are available. Browser APIs such
+as fetch, URL, timers, WebCrypto and Web Streams are not installed. Random
+numbers are deterministic, clocks are synthetic, and the plugin implements no
+per-call timeout or memory quota.
 
 ## Development
 
