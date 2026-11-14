@@ -30,9 +30,11 @@ configure: $(CMAKE_CACHE)
 build.nosync/tmp:
 	@mkdir -p "$@"
 
-# Record real compiler/configuration inputs; preserve its mtime when unchanged.
-build.nosync/configure-options: FORCE | build.nosync/tmp
-	@$(PYTHON) -c 'import json, os, pathlib, shutil; p = pathlib.Path("$@"); names = ["BUILD_TYPE", "CMAKE_CONFIGURE_FLAGS", "CMAKE_BUILD_FLAGS", "WASI_SDK_PATH", "CC", "CXX", "CFLAGS", "CXXFLAGS", "LDFLAGS"]; value = json.dumps({"environment": {n: os.environ.get(n) for n in names}, "tools": {n: shutil.which(n) for n in ["cmake", "rustc", "cargo", "wasm-tools", "wasm-opt", "wasmtime", "weval"]}}, sort_keys=True) + "\n"; p.write_text(value) if not p.exists() or p.read_text() != value else None'
+# Compare configuration at Make evaluation; unchanged packages have no recipes.
+CONFIGURE_OPTIONS_CODE = import json, os, pathlib, shutil; p = pathlib.Path("build.nosync/configure-options"); names = ["BUILD_TYPE", "CMAKE_CONFIGURE_FLAGS", "CMAKE_BUILD_FLAGS", "WASI_SDK_PATH", "CC", "CXX", "CFLAGS", "CXXFLAGS", "LDFLAGS"]; value = json.dumps({"environment": {n: os.environ.get(n) for n in names}, "tools": {n: shutil.which(n) for n in ["cmake", "rustc", "cargo", "wasm-tools", "wasm-opt", "wasmtime", "weval"]}}, sort_keys=True) + "\n"
+CONFIGURE_OPTIONS_CHANGED := $(shell $(PYTHON) -c '$(CONFIGURE_OPTIONS_CODE); print("changed" if not p.exists() or p.read_text() != value else "")')
+build.nosync/configure-options: $(if $(CONFIGURE_OPTIONS_CHANGED),FORCE) | build.nosync/tmp
+	@$(PYTHON) -c '$(CONFIGURE_OPTIONS_CODE); p.write_text(value) if not p.exists() or p.read_text() != value else None'
 
 $(CMAKE_CACHE): $(CMAKE_INPUTS) build.nosync/configure-options
 	cmake --fresh -S . -B $(BUILD_DIR) -DCMAKE_BUILD_TYPE=$(BUILD_TYPE) $(CMAKE_CONFIGURE_FLAGS)
