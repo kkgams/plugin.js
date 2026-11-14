@@ -1,41 +1,39 @@
 ---
-title: plugin.js
-description: Local development and Project launch.
+title: JavaScript plugin
+description: Build and use the GAMS JavaScript component.
 status: reference
 ---
 
-# plugin.js
+# JavaScript plugin
 
-Builds a SpiderMonkey-based JavaScript runner for the GAMS component
-runtime. The component exports
-`gams:js/js.run(source: string) -> result<string, string>` and imports
-`gams:runtime/runtime@1.0.0`.
+A SpiderMonkey-based JavaScript runner for [GAMS](https://github.com/kkgams/gams).
 
-Build with `make build` or `nix develop --command make build`. The component is
-`cmake-build-release/gams-js.wasm`; `make open` copies the selected build's
-artifact to `build/gams-js.wasm` for the local Project. The Files View browses
-Project files; it does not execute JavaScript or provide a script editor.
+| Unit | Source / output |
+| --- | --- |
+| `gams:js/js@1.0.0` | `runtime/`, `host-apis/my-minimal/` → `build.nosync/gams-js.wasm` |
 
-## Local Project and documentation
+Exports `run(source: string) -> result<string, string>`; imports only
+`gams:runtime/runtime@1.0.0`. No UI or standalone JavaScript application is shipped.
 
-```sh
-nix develop --command make open
-make serve-docs                 # http://localhost:8080; override DOCS_PORT
-make validate-docs
-make docs                       # portable site under build/site/
-```
+## Development
 
-`make open` builds the component and opens this repository's `gams.json` with
-explicit `GAMS_APP_CWD`. If absent, `tools/gams.app` is downloaded from the latest
-GAMS macOS Apple Silicon release, with its accompanying notices retained.
-An existing download is never updated implicitly; Gatekeeper is not bypassed.
-No neighboring checkout is required. First launch needs network access for the
-Project's pinned published dependencies.
+Use `nix develop` for pinned Rust 1.88.0/WASIp1, WASI SDK 30 and native build
+tools. The first build downloads pinned SpiderMonkey artifacts and CMake inputs.
+Cargo.lock fixes the generated Rust static library's dependency resolution.
 
-The local Project loads the built plugin and the published Files View to browse
-Project files. It is not a plugin-specific editor or an API/runtime test.
-The wiki uses pinned `justgook/wiki` v1.4.0, cached under ignored `build/`.
-GitHub Pages builds with `make docs` on every push to `release`, independently of
-component releases. Set Pages source to **GitHub Actions** in repository settings.
+| Command | Purpose |
+| --- | --- |
+| `make build` | Compile and embed recipient notices in `build.nosync/gams-js.wasm`. |
+| `make package` | Build the component and `build.nosync/SHA256SUMS`; no publication. |
+| `make open` | Build and open local `gams.json` in released GAMS v3.1.1 (macOS Apple Silicon). |
+| `make serve-docs` | Serve the pinned wiki; `DOCS_PORT` defaults to 8080. |
+| `make docs` | Build the wiki in `build.nosync/site/`. |
+| `make validate-docs` | Validate wiki content. |
+| `make clean` | Remove `build.nosync/` and this Makefile's marked Host download/notices; preserve supplied tools and legacy output. |
 
-The component API and release safeguards remain documented in the repository README.
+Set `NCPUS` to control compile parallelism (default 4). Build, download and cache
+output, including TMPDIR, Cargo and CPM caches, stays in `build.nosync/`.
+Changed compiler/options inputs force fresh CMake configuration. An existing
+`tools/gams.app` is never updated implicitly; launch explicitly selects this
+Project's `GAMS_APP_CWD` and `GAMS_CONFIG=gams.json`. The Files View in the local
+Project browses files; it is not a JavaScript editor or runtime test.

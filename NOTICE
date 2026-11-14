@@ -1,0 +1,38 @@
+GAMS JavaScript plugin
+
+Includes StarlingMonkey work by the Bytecode Alliance and contributors,
+licensed under Apache-2.0. Root LICENSE applies to that work and this plugin's
+Apache-licensed code, not to all linked third-party code.
+
+SpiderMonkey is from bytecodealliance/firefox commit
+9dab3d6f643e926a340c391ea30968e940390dec
+(FIREFOX_147_0_4_RELEASE_STARLING). Its MPL-2.0-covered source, including upstream
+modifications, can be obtained without charge from:
+https://github.com/bytecodealliance/firefox/tree/9dab3d6f643e926a340c391ea30968e940390dec
+https://github.com/bytecodealliance/firefox/archive/9dab3d6f643e926a340c391ea30968e940390dec.tar.gz
+Original Firefox terms and linked-library notices are under licenses/spidermonkey.
+The full Firefox collection includes terms for components absent from this build;
+it does not relicense the plugin or imply every listed component is linked.
+
+The modified MPL-2.0 rust-hooks source is included verbatim with these notices
+as crates/rust-hooks/Cargo.toml and crates/rust-hooks/src/{lib.rs,wrappers.cpp}.
+It remains available under MPL-2.0; the complete license is included in the
+Firefox license collection. No additional restrictions apply to covered source.
+
+Original notices for the Cargo.lock-resolved Rust dependencies are under
+licenses/rust-crates. Both alternatives of dual licenses are retained; data
+licenses, including WHATWG and Unicode terms, also remain applicable.
+Includes Rust 1.88.0 standard-library work: its complete original library notice
+collection is licenses/runtime/Rust-1.88.0-COPYRIGHT-library.html.
+
+WASI SDK 30 supplies linked C/C++ and compiler runtime code, including LLVM
+222fc11f2b8f25f6a0f4976272ef1bb7bf49521d and wasi-libc
+ec0effd769df5f05b647216578bcf5d3b5449725. Original terms are under licenses/runtime.
+Those files retain licensing alternatives and embedded-object exceptions.
+
+The distributed OCI component embeds this file, LICENSE, all licenses/ files and
+the actual modified MPL source in its gams:licenses custom section. Read them:
+  python3 scripts/notices.py --extract gams-js.wasm
+The script is available in the plugin.js source repository:
+https://github.com/kkgams/plugin.js
+The custom-section payload is UTF-8 text with labeled, verbatim file contents.

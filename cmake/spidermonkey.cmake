@@ -1,4 +1,7 @@
 set(SM_TAG FIREFOX_147_0_4_RELEASE_STARLING)
+set(SM_HASH_debug 49a5b610dace59331bc699ac53a99d9f4c3b4579441efa66147aa8e96b4ffcee)
+set(SM_HASH_release c57dc83d93dc04198882b44fea49cd3cb01e0b267bf99fae3b058cb158da684b)
+set(SM_HASH_release_weval f108286a1b9c35aeee89a803b073175a077633ffea5bbe4c3b85fcc85230dba0)
 
 include("manage-git-source")
 
@@ -36,6 +39,7 @@ else()
         message(STATUS "Using pre-built SpiderMonkey artifacts from ${SM_URL}")
         CPMAddPackage(NAME spidermonkey-${SM_BUILD_TYPE}
                 URL ${SM_URL}
+                URL_HASH SHA256=${SM_HASH_${SM_BUILD_TYPE}}
                 DOWNLOAD_ONLY YES
         )
         set(SM_LIB_DIR ${CPM_PACKAGE_spidermonkey-${SM_BUILD_TYPE}_SOURCE_DIR} CACHE STRING "Path to spidermonkey ${SM_BUILD_TYPE} build" FORCE)
@@ -54,8 +58,8 @@ if (DEFINED SM_LIB_DIR)
     target_link_libraries(spidermonkey INTERFACE ${SM_LIB_DIR}/libspidermonkey.a)
 else()
     # Clone SpiderMonkey source using git directly for shallow clone
-    # Use deps folder in project root for shared access across build directories
-    set(SM_SOURCE_DIR ${CMAKE_SOURCE_DIR}/deps/spidermonkey-source)
+    # Share generated source under build.nosync across build configurations
+    set(SM_SOURCE_DIR ${CMAKE_SOURCE_DIR}/build.nosync/spidermonkey-source)
 
     manage_git_source(
         NAME spidermonkey

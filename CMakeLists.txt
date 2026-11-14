@@ -10,7 +10,7 @@ message(STATUS "Using host API: ${HOST_API}")
 
 # Keep CPM downloads outside individual build directories.
 if(NOT DEFINED ENV{CPM_SOURCE_CACHE})
-    set(ENV{CPM_SOURCE_CACHE} ${CMAKE_CURRENT_SOURCE_DIR}/deps/cpm_cache)
+    set(ENV{CPM_SOURCE_CACHE} ${CMAKE_CURRENT_SOURCE_DIR}/build.nosync/cpm)
 endif()
 
 include("CPM")

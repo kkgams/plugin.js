@@ -1,93 +1,27 @@
-name: Publish Wasm OCI Artifact
-
+name: Publish OCI component
 on:
-  workflow_dispatch:
   push:
-    branches:
-      - main
-
+    tags: ['v[0-9]+.[0-9]+.[0-9]+']
 permissions:
   contents: read
   packages: write
-
+concurrency:
+  group: oci-${{ github.ref }}
+  cancel-in-progress: false
 jobs:
   publish:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@v14
-
-      - name: Enable Nix cache
-        uses: DeterminateSystems/magic-nix-cache-action@v8
-
-      - name: Build gams-js.wasm
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - uses: DeterminateSystems/nix-installer-action@ef8a148080ab6020fd15196c2084a2eea5ff2d25 # v22
+      - name: Package component
+        run: nix develop --command make package
+      - name: Publish immutable numeric OCI tag
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          nix develop --command make build
-
-      - name: Verify build artifact
-        run: |
-          test -f cmake-build-release/gams-js.wasm
-          ls -lh cmake-build-release/gams-js.wasm
-
-      - name: Compute OCI metadata
-        id: meta
-        run: |
-          OWNER="$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')"
-          IMAGE="ghcr.io/${OWNER}/gams/js"
-          VERSION="$(date -u +'%Y%m%d.%H%M')"
-          TIMESTAMP_REF="${IMAGE}:${VERSION}"
-          STABLE_REF="${IMAGE}:1.0.0"
-          LATEST_REF="${IMAGE}:latest"
-          PACKAGE="gams:js@1.0.0"
-
-          echo "owner=${OWNER}" >> "$GITHUB_OUTPUT"
-          echo "image=${IMAGE}" >> "$GITHUB_OUTPUT"
-          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
-          echo "timestamp_ref=${TIMESTAMP_REF}" >> "$GITHUB_OUTPUT"
-          echo "stable_ref=${STABLE_REF}" >> "$GITHUB_OUTPUT"
-          echo "latest_ref=${LATEST_REF}" >> "$GITHUB_OUTPUT"
-          echo "package=${PACKAGE}" >> "$GITHUB_OUTPUT"
-
-      - name: Install wkg
-        run: |
-          nix develop --command cargo install wkg
-
-      - name: Login to GHCR
-        run: |
-          echo "${{ secrets.GITHUB_TOKEN }}" \
-            | docker login ghcr.io \
-                -u "${{ github.actor }}" \
-                --password-stdin
-
-      - name: Push timestamped tag to GHCR
-        run: |
-          nix develop --command \
-            wkg oci push "${{ steps.meta.outputs.timestamp_ref }}" cmake-build-release/gams-js.wasm
-
-      - name: Push 1.0.0 tag to GHCR
-        run: |
-          nix develop --command \
-            wkg oci push "${{ steps.meta.outputs.stable_ref }}" cmake-build-release/gams-js.wasm
-
-      - name: Push latest tag to GHCR
-        run: |
-          nix develop --command \
-            wkg oci push "${{ steps.meta.outputs.latest_ref }}" cmake-build-release/gams-js.wasm
-
-      - name: Deployment summary
-        run: |
-          {
-            echo "## Published Wasm OCI artifact"
-            echo ""
-            echo "- Timestamped: \`${{ steps.meta.outputs.timestamp_ref }}\`"
-            echo "- Stable: \`${{ steps.meta.outputs.stable_ref }}\`"
-            echo "- Latest: \`${{ steps.meta.outputs.latest_ref }}\`"
-            echo ""
-            echo "- Package: \`${{ steps.meta.outputs.package }}\`"
-            echo "- Image: \`${{ steps.meta.outputs.image }}\`"
-            echo "- Version: \`${{ steps.meta.outputs.version }}\`"
-          } >> "$GITHUB_STEP_SUMMARY"
+          set -eu
+          reference="ghcr.io/kkgams/gams/js:${GITHUB_REF_NAME#v}"
+          printf '%s' "$GH_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+          nix develop --command python3 scripts/oci-tag-absent.py "$reference"
+          nix develop --command wkg oci push "$reference" build.nosync/gams-js.wasm

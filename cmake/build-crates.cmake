@@ -15,11 +15,13 @@ set(RUST_STATICLIB_RS "${CMAKE_CURRENT_BINARY_DIR}/rust-staticlib.rs" CACHE INTE
 set(RUST_STATICLIB_TOML "${CMAKE_CURRENT_BINARY_DIR}/Cargo.toml" CACHE INTERNAL "Path to the Rust staticlibs bundler Cargo.toml file" FORCE)
 configure_file("runtime/crates/staticlib-template/rust-staticlib.rs.in" "${RUST_STATICLIB_RS}" COPYONLY)
 configure_file("runtime/crates/staticlib-template/Cargo.toml.in" "${RUST_STATICLIB_TOML}")
+configure_file("Cargo.lock" "${CMAKE_CURRENT_BINARY_DIR}/Cargo.lock" COPYONLY)
 
 corrosion_import_crate(
         MANIFEST_PATH ${RUST_STATICLIB_TOML}
         CRATES "rust-staticlib"
         NO_LINKER_OVERRIDE
+        LOCKED
 )
 
 # Add a Rust library to the staticlib bundle.

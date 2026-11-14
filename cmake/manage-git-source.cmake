@@ -12,7 +12,7 @@ function(manage_git_source)
         message(FATAL_ERROR "manage_git_source requires NAME, REPO_URL, TAG, and SOURCE_DIR arguments")
     endif()
 
-    set(LOCK_FILE ${CMAKE_SOURCE_DIR}/deps/.${GIT_SRC_NAME}-clone.lock)
+    set(LOCK_FILE ${CMAKE_SOURCE_DIR}/build.nosync/.${GIT_SRC_NAME}-clone.lock)
 
     # Use file locking to prevent concurrent clone operations
     file(LOCK ${LOCK_FILE} GUARD FUNCTION)

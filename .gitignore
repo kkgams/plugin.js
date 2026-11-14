@@ -17,3 +17,5 @@
 /tools/
 
 /gams_modules/
+
+/build.nosync/
